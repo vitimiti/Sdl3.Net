@@ -1,3 +1,24 @@
+// The MIT License
+//
+// Copyright © 2025 Victor Matia <vmatir@outlook.com>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+// and associated documentation files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or
+// substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+// OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+
 using System.Runtime.InteropServices;
 using Sdl3.Net.Extensions;
 using Sdl3.Net.PropertiesSystem;
@@ -5,6 +26,9 @@ using static Sdl3.Net.Imports.SDL3;
 
 namespace Sdl3.Net.StreamManagement;
 
+/// <summary>
+/// Represents an I/O stream in SDL.
+/// </summary>
 public class IoStream : Stream
 {
     private readonly SDL_IOStream _ioStream;
@@ -12,6 +36,9 @@ public class IoStream : Stream
 
     private IoStream(SDL_IOStream ioStream) => _ioStream = ioStream;
 
+    /// <summary>
+    ///  Disposes the resources of the <see cref="IoStream"/> class.
+    /// </summary>
     protected override void Dispose(bool disposing)
     {
         if (!_disposedValue)
@@ -29,24 +56,50 @@ public class IoStream : Stream
         base.Dispose(disposing);
     }
 
+    /// <summary>
+    ///  Gets a value indicating whether the I/O stream can be read from.
+    /// </summary>
     public override bool CanRead =>
         Status is not IoStatus.Error and IoStatus.Ready and not IoStatus.WriteOnly;
 
+    /// <summary>
+    ///  Gets a value indicating whether the I/O stream can be seeked.
+    /// </summary>
     public override bool CanSeek => Status is not IoStatus.Error and IoStatus.Ready;
 
+    /// <summary>
+    ///  Gets a value indicating whether the I/O stream can be written to.
+    /// </summary>
     public override bool CanWrite =>
         Status is not IoStatus.Error and IoStatus.Ready and not IoStatus.ReadOnly;
 
+    /// <summary>
+    ///  Gets the length of the I/O stream.
+    /// </summary>
     public override long Length => SDL_GetIOSize(_ioStream);
 
+    /// <summary>
+    /// Gets or sets the current position in the I/O stream.
+    /// </summary>
     public override long Position
     {
         get => SDL_TellIO(_ioStream);
         set => Seek(value, SeekOrigin.Begin);
     }
 
+    /// <summary>
+    /// Gets the status of the I/O stream.
+    /// </summary>
+    /// <returns>The status of the I/O stream.</returns>
     public IoStatus Status => SDL_GetIOStatus(_ioStream);
 
+    /// <summary>
+    /// Creates an I/O stream from a file.
+    /// </summary>
+    /// <param name="file">The file path.</param>
+    /// <param name="mode">The file mode.</param>
+    /// <returns>The created I/O stream.</returns>
+    /// <exception cref="ExternalException">Thrown if the file could not be opened.</exception>
     public static IoStream FromFile(string file, IoStreamFileMode mode)
     {
         var modeString = mode switch
@@ -67,16 +120,19 @@ public class IoStream : Stream
         };
 
         SDL_IOStream ioStream = SDL_IOFromFile(file, modeString);
-        if (ioStream.IsInvalid)
-        {
-            throw new ExternalException(
+        return ioStream.IsInvalid
+            ? throw new ExternalException(
                 $"Failed to open file '{file}' with mode '{modeString}': {SDL_GetError()}"
-            );
-        }
-
-        return new IoStream(ioStream);
+            )
+            : new IoStream(ioStream);
     }
 
+    /// <summary>
+    /// Creates an I/O stream from a memory buffer.
+    /// </summary>
+    /// <param name="memory">The memory buffer.</param>
+    /// <returns>The created I/O stream.</returns>
+    /// <exception cref="ExternalException">Thrown if the memory could not be used to create an I/O stream.</exception>
     public static IoStream FromMemory(Memory<byte> memory)
     {
         unsafe
@@ -93,6 +149,12 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Creates an I/O stream from a constant memory buffer.
+    /// </summary>
+    /// <param name="memory">The memory buffer.</param>
+    /// <returns>The created I/O stream.</returns>
+    /// <exception cref="ExternalException">Thrown if the memory could not be used to create an I/O stream.</exception>
     public static IoStream FromConstMemory(ReadOnlyMemory<byte> memory)
     {
         unsafe
@@ -112,6 +174,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Creates an I/O stream from dynamic memory.
+    /// </summary>
+    /// <returns>The created I/O stream.</returns>
+    /// <exception cref="ExternalException">Thrown if the dynamic memory could not be used to create an I/O stream.</exception>
     public static IoStream FromDynamicMemory()
     {
         SDL_IOStream ioStream = SDL_IOFromDynamicMem();
@@ -120,6 +187,12 @@ public class IoStream : Stream
             : new IoStream(ioStream);
     }
 
+    /// <summary>
+    /// Loads a file into memory.
+    /// </summary>
+    /// <param name="file">The file path.</param>
+    /// <returns>The loaded file data.</returns>
+    /// <exception cref="ExternalException">Thrown if the file could not be loaded.</exception>
     public static Memory<byte> LoadFile(string file)
     {
         unsafe
@@ -134,6 +207,12 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Saves data to a file.
+    /// </summary>
+    /// <param name="file">The file path.</param>
+    /// <param name="data">The data to save.</param>
+    /// <exception cref="ExternalException">Thrown if the file could not be saved.</exception>
     public static void SaveFile(string file, ReadOnlyMemory<byte> data)
     {
         unsafe
@@ -148,6 +227,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Gets the properties of the I/O stream.
+    /// </summary>
+    /// <returns>The properties of the I/O stream.</returns>
+    /// <exception cref="ExternalException">Thrown if the properties could not be retrieved.</exception>
     public IoStreamProperties GetProperties()
     {
         SDL_PropertiesID propertiesId = SDL_GetIOProperties(_ioStream);
@@ -156,6 +240,10 @@ public class IoStream : Stream
             : new IoStreamProperties(propertiesId);
     }
 
+    /// <summary>
+    ///  Flushes the I/O stream.
+    /// </summary>
+    /// <exception cref="ExternalException">Thrown if the I/O stream could not be flushed.</exception>
     public override void Flush()
     {
         if (!SDL_FlushIO(_ioStream))
@@ -164,6 +252,14 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Reads data from the I/O stream into a byte array.
+    /// </summary>
+    /// <param name="buffer">The buffer to read data into.</param>
+    /// <param name="offset">The offset in the buffer to start writing data.</param>
+    /// <param name="count">The number of bytes to read.</param>
+    /// <returns>The number of bytes read.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public override int Read(byte[] buffer, int offset, int count)
     {
         unsafe
@@ -180,6 +276,13 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Seeks to a specific position in the I/O stream.
+    /// </summary>
+    /// <param name="offset">The offset to seek to.</param>
+    /// <param name="origin">The seek origin.</param>
+    /// <returns>The new position in the I/O stream.</returns>
+    /// <exception cref="ExternalException">Thrown if the seek operation fails.</exception>
     public override long Seek(long offset, SeekOrigin origin)
     {
         var finalOffset = SDL_SeekIO(_ioStream, offset, (IoWhence)origin);
@@ -188,9 +291,21 @@ public class IoStream : Stream
             : finalOffset;
     }
 
+    /// <summary>
+    /// This operation is NOT supported.
+    /// </summary>
+    /// <param name="value">The new length of the I/O stream.</param>
+    /// <exception cref="NotSupportedException">Always thrown.</exception>
     public override void SetLength(long value) =>
         throw new NotSupportedException("Setting length is not supported for IO streams.");
 
+    /// <summary>
+    /// Writes data to the I/O stream from a byte array.
+    /// </summary>
+    /// <param name="buffer">The buffer containing the data to write.</param>
+    /// <param name="offset">The offset in the buffer to start reading data.</param>
+    /// <param name="count">The number of bytes to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public override void Write(byte[] buffer, int offset, int count)
     {
         unsafe
@@ -211,6 +326,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Prints a string to the I/O stream.
+    /// </summary>
+    /// <param name="str">The string to print.</param>
+    /// <exception cref="ExternalException">Thrown if the print operation fails.</exception>
     public void Print(string str)
     {
         if (SDL_IOprintf(_ioStream, str.ToStdIoString()).Value == 0)
@@ -219,6 +339,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Loads data from the I/O stream into a memory buffer.
+    /// </summary>
+    /// <returns>A memory buffer containing the loaded data.</returns>
+    /// <exception cref="ExternalException">Thrown if the load operation fails.</exception>
     public Memory<byte> Load()
     {
         unsafe
@@ -235,6 +360,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Saves data to the I/O stream from a memory buffer.
+    /// </summary>
+    /// <param name="data">The memory buffer containing the data to save.</param>
+    /// <exception cref="ExternalException">Thrown if the save operation fails.</exception>
     public void Save(ReadOnlyMemory<byte> data)
     {
         unsafe
@@ -258,16 +388,31 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Reads an unsigned 8-bit integer from the I/O stream.
+    /// </summary>
+    /// <returns>The read unsigned 8-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public byte ReadU8() =>
         !SDL_ReadU8(_ioStream, out var value)
             ? throw new ExternalException($"Failed to read byte from IO stream: {SDL_GetError()}")
             : value;
 
+    /// <summary>
+    /// Reads a signed 8-bit integer from the I/O stream.
+    /// </summary>
+    /// <returns>The read signed 8-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public sbyte ReadS8() =>
         !SDL_ReadS8(_ioStream, out var value)
             ? throw new ExternalException($"Failed to read sbyte from IO stream: {SDL_GetError()}")
             : value;
 
+    /// <summary>
+    /// Reads an unsigned 16-bit integer in little-endian format from the I/O stream
+    /// </summary>
+    /// <returns>The read unsigned 16-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public ushort ReadU16LittleEndian() =>
         !SDL_ReadU16LE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -275,6 +420,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads a signed 16-bit integer in little-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read signed 16-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public short ReadS16LittleEndian() =>
         !SDL_ReadS16LE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -282,6 +432,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads an unsigned 16-bit integer in big-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read unsigned 16-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public ushort ReadU16BigEndian() =>
         !SDL_ReadU16BE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -289,6 +444,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads a signed 16-bit integer in big-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read signed 16-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public short ReadS16BigEndian() =>
         !SDL_ReadS16BE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -296,6 +456,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads an unsigned 32-bit integer in little-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read unsigned 32-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public uint ReadU32LittleEndian() =>
         !SDL_ReadU32LE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -303,6 +468,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads a signed 32-bit integer in little-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read signed 32-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public int ReadS32LittleEndian() =>
         !SDL_ReadS32LE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -310,6 +480,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads an unsigned 32-bit integer in big-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read unsigned 32-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public uint ReadU32BigEndian() =>
         !SDL_ReadU32BE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -317,6 +492,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads a signed 32-bit integer in big-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read signed 32-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public int ReadS32BigEndian() =>
         !SDL_ReadS32BE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -324,6 +504,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads an unsigned 64-bit integer in little-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read unsigned 64-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public ulong ReadU64LittleEndian() =>
         !SDL_ReadU64LE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -331,6 +516,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads a signed 64-bit integer in little-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read signed 64-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public long ReadS64LittleEndian() =>
         !SDL_ReadS64LE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -338,6 +528,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads an unsigned 64-bit integer in big-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read unsigned 64-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public ulong ReadU64BigEndian() =>
         !SDL_ReadU64BE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -345,6 +540,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Reads a signed 64-bit integer in big-endian format from the I/O stream.
+    /// </summary>
+    /// <returns>The read signed 64-bit integer.</returns>
+    /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public long ReadS64BigEndian() =>
         !SDL_ReadS64BE(_ioStream, out var value)
             ? throw new ExternalException(
@@ -352,6 +552,11 @@ public class IoStream : Stream
             )
             : value;
 
+    /// <summary>
+    /// Writes an unsigned 8-bit integer to the I/O stream.
+    /// </summary>
+    /// <param name="value">The unsigned 8-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU8(byte value)
     {
         if (!SDL_WriteU8(_ioStream, value))
@@ -362,6 +567,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes a signed 8-bit integer to the I/O stream.
+    /// </summary>
+    /// <param name="value">The signed 8-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS8(sbyte value)
     {
         if (!SDL_WriteS8(_ioStream, value))
@@ -372,6 +582,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes an unsigned 16-bit integer in little-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The unsigned 16-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU16LittleEndian(ushort value)
     {
         if (!SDL_WriteU16LE(_ioStream, value))
@@ -382,6 +597,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes a signed 16-bit integer in little-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The signed 16-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS16LittleEndian(short value)
     {
         if (!SDL_WriteS16LE(_ioStream, value))
@@ -392,6 +612,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes an unsigned 16-bit integer in big-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The unsigned 16-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU16BigEndian(ushort value)
     {
         if (!SDL_WriteU16BE(_ioStream, value))
@@ -402,6 +627,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes a signed 16-bit integer in big-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The signed 16-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS16BigEndian(short value)
     {
         if (!SDL_WriteS16BE(_ioStream, value))
@@ -412,6 +642,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes an unsigned 32-bit integer in little-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The unsigned 32-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU32LittleEndian(uint value)
     {
         if (!SDL_WriteU32LE(_ioStream, value))
@@ -422,6 +657,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes a signed 32-bit integer in little-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The signed 32-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU32BigEndian(uint value)
     {
         if (!SDL_WriteU32BE(_ioStream, value))
@@ -432,6 +672,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes a signed 32-bit integer in big-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The signed 32-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS32LittleEndian(int value)
     {
         if (!SDL_WriteS32LE(_ioStream, value))
@@ -442,6 +687,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes a signed 32-bit integer in big-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The signed 32-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS32BigEndian(int value)
     {
         if (!SDL_WriteS32BE(_ioStream, value))
@@ -452,6 +702,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes an unsigned 64-bit integer in little-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The unsigned 64-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU64LittleEndian(ulong value)
     {
         if (!SDL_WriteU64LE(_ioStream, value))
@@ -462,6 +717,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes a signed 64-bit integer in little-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The signed 64-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU64BigEndian(ulong value)
     {
         if (!SDL_WriteU64BE(_ioStream, value))
@@ -472,6 +732,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes a signed 64-bit integer in big-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The signed 64-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS64LittleEndian(long value)
     {
         if (!SDL_WriteS64LE(_ioStream, value))
@@ -482,6 +747,11 @@ public class IoStream : Stream
         }
     }
 
+    /// <summary>
+    /// Writes a signed 64-bit integer in big-endian format to the I/O stream.
+    /// </summary>
+    /// <param name="value">The signed 64-bit integer to write.</param>
+    /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS64BigEndian(long value)
     {
         if (!SDL_WriteS64BE(_ioStream, value))
