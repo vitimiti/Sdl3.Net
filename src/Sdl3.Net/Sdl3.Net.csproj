@@ -15,7 +15,7 @@
     <PackageId>Sdl3.Net</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/vitimiti/Sdl3.Net.git</PackageProjectUrl>
-    <PackageIcon>$(SolutionDir)/icon.png</PackageIcon>
+    <PackageIcon>resources/icon.png</PackageIcon>
     <ReadmeFile>docs/README.md</ReadmeFile>
     <RequireLicenseAcceptance>true</RequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -35,11 +35,11 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <None Update="icon.png" Pack="true" PackagePath="icon.png" />
-    <None Update="$(SolutionDir)/README.md" Pack="true" PackagePath="docs/README.md" />
-    <None Update="$(SolutionDir)/LICENSE.md" Pack="true" PackagePath="LICENSE.md" />
-    <None
-      Update="$(SolutionDir)/CODE_OF_CONDUCT.md"
+    <Content Include="$(SolutionDir)/icon.png" Pack="true" PackagePath="resources/icon.png" />
+    <Content Include="$(SolutionDir)/README.md" Pack="true" PackagePath="docs/README.md" />
+    <Content Include="$(SolutionDir)/LICENSE.md" Pack="true" PackagePath="docs/LICENSE.md" />
+    <Content
+      Include="$(SolutionDir)/CODE_OF_CONDUCT.md"
       Pack="true"
       PackagePath="docs/CODE_OF_CONDUCT.md"
     />
