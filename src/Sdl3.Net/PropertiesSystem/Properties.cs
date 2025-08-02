@@ -10,12 +10,15 @@ public class Properties : IDisposable
     public delegate void EnumeratePropertiesCallback(Properties properties, string name);
 
     private SDL_PropertiesID _propertiesId;
+    private readonly bool _ownsProperties;
+
     private bool _isLocked;
     private bool _disposedValue;
 
     internal static GCHandle CleanupCallbackHandle { get; set; }
 
-    internal Properties(SDL_PropertiesID propertiesId) => _propertiesId = propertiesId;
+    internal Properties(SDL_PropertiesID propertiesId, bool ownsProperties = false) =>
+        (_propertiesId, _ownsProperties) = (propertiesId, ownsProperties);
 
     protected virtual void Dispose(bool disposing)
     {
@@ -40,7 +43,11 @@ public class Properties : IDisposable
             CleanupCallbackHandle.Free();
         }
 
-        SDL_DestroyProperties(_propertiesId);
+        if (_ownsProperties)
+        {
+            SDL_DestroyProperties(_propertiesId);
+        }
+
         _disposedValue = true;
     }
 
@@ -62,7 +69,7 @@ public class Properties : IDisposable
         SDL_PropertiesID propertiesId = SDL_CreateProperties();
         return propertiesId.Value == 0
             ? throw new ExternalException($"Failed to create properties: {SDL_GetError()}")
-            : new Properties(propertiesId);
+            : new Properties(propertiesId, ownsProperties: true);
     }
 
     public static GlobalProperties GetGlobal()
