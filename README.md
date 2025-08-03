@@ -143,7 +143,7 @@ var timeSinceStartup = app.TimeSinceStartup;
 
 And to get the performance counter and frequency, you can do:
 
-```chasrp
+```csharp
 using Sdl.Net;
 
 var performanceCounter = Performance.Counter;
