@@ -19,6 +19,7 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Sdl3.Net.AppSubsystems;
 using Sdl3.Net.Options;
@@ -235,6 +236,18 @@ public class App : IDisposable
     public VideoSubsystem Video => new(this);
 
     /// <summary>
+    /// Gets the time since the application started.
+    /// </summary>
+    public TimeSpan TimeSinceStartup
+    {
+        get
+        {
+            Debug.Assert(this is not null); // Ensure the app is initialized before accessing this property
+            return TimeSpan.FromMilliseconds(SDL_GetTicks());
+        }
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="App"/> class.
     /// </summary>
     /// <param name="options">An optional action to configure the application options.</param>
@@ -257,6 +270,11 @@ public class App : IDisposable
                     $"Failed to set app metadata '{_options}': {SDL_GetError()}"
                 );
             }
+        }
+
+        if (!SDL_InitSubSystem(new SDL_InitFlags(0)))
+        {
+            throw new ExternalException($"Failed to initialize SDL3: {SDL_GetError()}");
         }
     }
 

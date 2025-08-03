@@ -127,3 +127,25 @@ to get, set, or get and set (depending on property), as shown in the example abo
 Other methods such as `Seek` or `Write` or `Read` are implemented as per the `Stream` base class,
 but using the SDL functions. The only method that cannot be implemented is `SetLength`, which will
 throw a `NotSupportedException`.
+
+## The Timer Subsystem
+
+Becuase C# and dotnet already have timer systems, only the essentials have been added.
+
+To get the time passed since the application initialization, you can do:
+
+```csharp
+using Sdl.Net;
+
+using App app = new();
+var timeSinceStartup = app.TimeSinceStartup;
+```
+
+And to get the performance counter and frequency, you can do:
+
+```chasrp
+using Sdl.Net;
+
+var performanceCounter = Performance.Counter;
+var performanceFrequency = Performance.Frequency;
+```
