@@ -45,6 +45,7 @@ Current version: `0.4.0-alpha`
     - [The Properties System](#the-properties-system)
     - [The IO Stream System](#the-io-stream-system)
     - [The Timer Subsystem](#the-timer-subsystem)
+    - [Shapes](#shapes)
 
 ## SDL Error Reporting
 
@@ -189,4 +190,41 @@ using Sdl.Net;
 
 var performanceCounter = Performance.Counter;
 var performanceFrequency = Performance.Frequency;
+```
+
+### Shapes
+
+Both the points and rectangle systems, be it integer or floating-point ones,
+simply go into a full on OOP system.
+
+For example:
+
+```csharp
+using Sdl3.Net.Shapes;
+
+Rect rect = new(0, 0, 0, 0);
+Console.WriteLine($"Rectangle is empty: {rect.IsEmpty}");
+```
+
+The point collections methods of `SDL_SDL_GetRectEnclosingPoints` and
+`SDL_GetRectEnclosingPointsFloat` are created through extension methods on
+`IEnumerable<Point>` and `IEnumerable<FPoint>`, respectively.
+
+For example:
+
+```csharp
+using Sdl3.Net.Shapes;
+using Sdl3.Net.Extensions;
+
+Point[] points = [
+    new(0, 0),
+    new(5, 5),
+    new(10, 10),
+    new(15, 15)
+];
+
+if (points.TryGetEnclosingRect(clip: null, out var result))
+{
+    Console.WriteLine($"Enclosing rect: {result}");
+}
 ```
