@@ -45,4 +45,5 @@
       PackagePath="docs/CODE_OF_CONDUCT.md"
     />
   </ItemGroup>
+  <Content Include="$(SolutionDir)/CHANGELOG.md" Pack="true" PackagePath="docs/CHANGELOG.md" />
 </Project>
