@@ -94,7 +94,7 @@ To get the global properties, simply call `var globalProps = Properties.GetGloba
 
 Other properties that are related to other systems will be discussed in said systems.
 
-## The IO Stream System
+### The IO Stream System
 
 To manage the SDL3 IO Streams, you may use the class `IoStream`, found in the `Sdl3.Net.StreamManagement`
 namespace. This class inherits from dotnet's `Stream` and should be treated as such, even if it adds further
@@ -128,7 +128,7 @@ Other methods such as `Seek` or `Write` or `Read` are implemented as per the `St
 but using the SDL functions. The only method that cannot be implemented is `SetLength`, which will
 throw a `NotSupportedException`.
 
-## The Timer Subsystem
+### The Timer Subsystem
 
 Becuase C# and dotnet already have timer systems, only the essentials have been added.
 
