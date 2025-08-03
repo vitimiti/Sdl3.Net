@@ -31,10 +31,10 @@ namespace Sdl3.Net.StreamManagement;
 /// </summary>
 public class IoStream : Stream
 {
-    private readonly SDL_IOStream _ioStream;
+    private readonly SDL_IOStream _handle;
     private bool _disposedValue;
 
-    private IoStream(SDL_IOStream ioStream) => _ioStream = ioStream;
+    private IoStream(SDL_IOStream ioStream) => _handle = ioStream;
 
     /// <summary>
     ///  Disposes the resources of the <see cref="IoStream"/> class.
@@ -46,7 +46,7 @@ public class IoStream : Stream
             if (disposing)
             {
                 // Free managed resources
-                _ioStream.Dispose();
+                _handle.Dispose();
             }
 
             // Free unmanaged resources
@@ -76,14 +76,14 @@ public class IoStream : Stream
     /// <summary>
     ///  Gets the length of the I/O stream.
     /// </summary>
-    public override long Length => SDL_GetIOSize(_ioStream);
+    public override long Length => SDL_GetIOSize(_handle);
 
     /// <summary>
     /// Gets or sets the current position in the I/O stream.
     /// </summary>
     public override long Position
     {
-        get => SDL_TellIO(_ioStream);
+        get => SDL_TellIO(_handle);
         set => Seek(value, SeekOrigin.Begin);
     }
 
@@ -91,7 +91,7 @@ public class IoStream : Stream
     /// Gets the status of the I/O stream.
     /// </summary>
     /// <returns>The status of the I/O stream.</returns>
-    public IoStatus Status => SDL_GetIOStatus(_ioStream);
+    public IoStatus Status => SDL_GetIOStatus(_handle);
 
     /// <summary>
     /// Creates an I/O stream from a file.
@@ -234,7 +234,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the properties could not be retrieved.</exception>
     public IoStreamProperties GetProperties()
     {
-        SDL_PropertiesID propertiesId = SDL_GetIOProperties(_ioStream);
+        SDL_PropertiesID propertiesId = SDL_GetIOProperties(_handle);
         return propertiesId.Value == 0
             ? throw new ExternalException($"Failed to get IO stream properties: {SDL_GetError()}")
             : new IoStreamProperties(propertiesId);
@@ -246,7 +246,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the I/O stream could not be flushed.</exception>
     public override void Flush()
     {
-        if (!SDL_FlushIO(_ioStream))
+        if (!SDL_FlushIO(_handle))
         {
             throw new ExternalException($"Failed to flush IO stream: {SDL_GetError()}");
         }
@@ -266,7 +266,7 @@ public class IoStream : Stream
         {
             fixed (byte* bufferPtr = buffer)
             {
-                var bytesRead = SDL_ReadIO(_ioStream, bufferPtr + offset, new CULong((nuint)count));
+                var bytesRead = SDL_ReadIO(_handle, bufferPtr + offset, new CULong((nuint)count));
                 return bytesRead <= 0 && Status is not IoStatus.Eof
                     ? throw new ExternalException(
                         $"Failed to read from IO stream: {SDL_GetError()}"
@@ -285,7 +285,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the seek operation fails.</exception>
     public override long Seek(long offset, SeekOrigin origin)
     {
-        var finalOffset = SDL_SeekIO(_ioStream, offset, (IoWhence)origin);
+        var finalOffset = SDL_SeekIO(_handle, offset, (IoWhence)origin);
         return offset < 0
             ? throw new ExternalException($"Failed to seek in IO stream: {SDL_GetError()}")
             : finalOffset;
@@ -313,7 +313,7 @@ public class IoStream : Stream
             fixed (byte* bufferPtr = buffer)
             {
                 var bytesWritten = SDL_WriteIO(
-                    _ioStream,
+                    _handle,
                     bufferPtr + offset,
                     new CULong((nuint)count)
                 );
@@ -333,7 +333,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the print operation fails.</exception>
     public void Print(string str)
     {
-        if (SDL_IOprintf(_ioStream, str.ToStdIoString()).Value == 0)
+        if (SDL_IOprintf(_handle, str.ToStdIoString()).Value == 0)
         {
             throw new ExternalException($"Failed to print '{str}' to IO stream: {SDL_GetError()}");
         }
@@ -348,7 +348,7 @@ public class IoStream : Stream
     {
         unsafe
         {
-            var dataPtr = SDL_LoadFile_IO(_ioStream, out var dataSize, closeio: false);
+            var dataPtr = SDL_LoadFile_IO(_handle, out var dataSize, closeio: false);
             if (dataPtr is null)
             {
                 throw new ExternalException(
@@ -373,7 +373,7 @@ public class IoStream : Stream
             {
                 if (
                     !SDL_SaveFile_IO(
-                        _ioStream,
+                        _handle,
                         dataPtr,
                         new CULong((nuint)data.Length),
                         closeio: false
@@ -394,7 +394,7 @@ public class IoStream : Stream
     /// <returns>The read unsigned 8-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public byte ReadU8() =>
-        !SDL_ReadU8(_ioStream, out var value)
+        !SDL_ReadU8(_handle, out var value)
             ? throw new ExternalException($"Failed to read byte from IO stream: {SDL_GetError()}")
             : value;
 
@@ -404,7 +404,7 @@ public class IoStream : Stream
     /// <returns>The read signed 8-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public sbyte ReadS8() =>
-        !SDL_ReadS8(_ioStream, out var value)
+        !SDL_ReadS8(_handle, out var value)
             ? throw new ExternalException($"Failed to read sbyte from IO stream: {SDL_GetError()}")
             : value;
 
@@ -414,7 +414,7 @@ public class IoStream : Stream
     /// <returns>The read unsigned 16-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public ushort ReadU16LittleEndian() =>
-        !SDL_ReadU16LE(_ioStream, out var value)
+        !SDL_ReadU16LE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read little endian ushort from IO stream: {SDL_GetError()}"
             )
@@ -426,7 +426,7 @@ public class IoStream : Stream
     /// <returns>The read signed 16-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public short ReadS16LittleEndian() =>
-        !SDL_ReadS16LE(_ioStream, out var value)
+        !SDL_ReadS16LE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read little endian short from IO stream: {SDL_GetError()}"
             )
@@ -438,7 +438,7 @@ public class IoStream : Stream
     /// <returns>The read unsigned 16-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public ushort ReadU16BigEndian() =>
-        !SDL_ReadU16BE(_ioStream, out var value)
+        !SDL_ReadU16BE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read big endian ushort from IO stream: {SDL_GetError()}"
             )
@@ -450,7 +450,7 @@ public class IoStream : Stream
     /// <returns>The read signed 16-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public short ReadS16BigEndian() =>
-        !SDL_ReadS16BE(_ioStream, out var value)
+        !SDL_ReadS16BE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read big endian short from IO stream: {SDL_GetError()}"
             )
@@ -462,7 +462,7 @@ public class IoStream : Stream
     /// <returns>The read unsigned 32-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public uint ReadU32LittleEndian() =>
-        !SDL_ReadU32LE(_ioStream, out var value)
+        !SDL_ReadU32LE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read little endian uint from IO stream: {SDL_GetError()}"
             )
@@ -474,7 +474,7 @@ public class IoStream : Stream
     /// <returns>The read signed 32-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public int ReadS32LittleEndian() =>
-        !SDL_ReadS32LE(_ioStream, out var value)
+        !SDL_ReadS32LE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read little endian int from IO stream: {SDL_GetError()}"
             )
@@ -486,7 +486,7 @@ public class IoStream : Stream
     /// <returns>The read unsigned 32-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public uint ReadU32BigEndian() =>
-        !SDL_ReadU32BE(_ioStream, out var value)
+        !SDL_ReadU32BE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read big endian uint from IO stream: {SDL_GetError()}"
             )
@@ -498,7 +498,7 @@ public class IoStream : Stream
     /// <returns>The read signed 32-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public int ReadS32BigEndian() =>
-        !SDL_ReadS32BE(_ioStream, out var value)
+        !SDL_ReadS32BE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read big endian int from IO stream: {SDL_GetError()}"
             )
@@ -510,7 +510,7 @@ public class IoStream : Stream
     /// <returns>The read unsigned 64-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public ulong ReadU64LittleEndian() =>
-        !SDL_ReadU64LE(_ioStream, out var value)
+        !SDL_ReadU64LE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read little endian ulong from IO stream: {SDL_GetError()}"
             )
@@ -522,7 +522,7 @@ public class IoStream : Stream
     /// <returns>The read signed 64-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public long ReadS64LittleEndian() =>
-        !SDL_ReadS64LE(_ioStream, out var value)
+        !SDL_ReadS64LE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read little endian long from IO stream: {SDL_GetError()}"
             )
@@ -534,7 +534,7 @@ public class IoStream : Stream
     /// <returns>The read unsigned 64-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public ulong ReadU64BigEndian() =>
-        !SDL_ReadU64BE(_ioStream, out var value)
+        !SDL_ReadU64BE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read big endian ulong from IO stream: {SDL_GetError()}"
             )
@@ -546,7 +546,7 @@ public class IoStream : Stream
     /// <returns>The read signed 64-bit integer.</returns>
     /// <exception cref="ExternalException">Thrown if the read operation fails.</exception>
     public long ReadS64BigEndian() =>
-        !SDL_ReadS64BE(_ioStream, out var value)
+        !SDL_ReadS64BE(_handle, out var value)
             ? throw new ExternalException(
                 $"Failed to read big endian long from IO stream: {SDL_GetError()}"
             )
@@ -559,7 +559,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU8(byte value)
     {
-        if (!SDL_WriteU8(_ioStream, value))
+        if (!SDL_WriteU8(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write byte '{value}' to IO stream: {SDL_GetError()}"
@@ -574,7 +574,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS8(sbyte value)
     {
-        if (!SDL_WriteS8(_ioStream, value))
+        if (!SDL_WriteS8(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write sbyte '{value}' to IO stream: {SDL_GetError()}"
@@ -589,7 +589,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU16LittleEndian(ushort value)
     {
-        if (!SDL_WriteU16LE(_ioStream, value))
+        if (!SDL_WriteU16LE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write little endian ushort '{value}' to IO stream: {SDL_GetError()}"
@@ -604,7 +604,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS16LittleEndian(short value)
     {
-        if (!SDL_WriteS16LE(_ioStream, value))
+        if (!SDL_WriteS16LE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write little endian short '{value}' to IO stream: {SDL_GetError()}"
@@ -619,7 +619,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU16BigEndian(ushort value)
     {
-        if (!SDL_WriteU16BE(_ioStream, value))
+        if (!SDL_WriteU16BE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write big endian ushort '{value}' to IO stream: {SDL_GetError()}"
@@ -634,7 +634,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS16BigEndian(short value)
     {
-        if (!SDL_WriteS16BE(_ioStream, value))
+        if (!SDL_WriteS16BE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write big endian short '{value}' to IO stream: {SDL_GetError()}"
@@ -649,7 +649,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU32LittleEndian(uint value)
     {
-        if (!SDL_WriteU32LE(_ioStream, value))
+        if (!SDL_WriteU32LE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write little endian uint '{value}' to IO stream: {SDL_GetError()}"
@@ -664,7 +664,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU32BigEndian(uint value)
     {
-        if (!SDL_WriteU32BE(_ioStream, value))
+        if (!SDL_WriteU32BE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write big endian uint '{value}' to IO stream: {SDL_GetError()}"
@@ -679,7 +679,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS32LittleEndian(int value)
     {
-        if (!SDL_WriteS32LE(_ioStream, value))
+        if (!SDL_WriteS32LE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write little endian int '{value}' to IO stream: {SDL_GetError()}"
@@ -694,7 +694,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS32BigEndian(int value)
     {
-        if (!SDL_WriteS32BE(_ioStream, value))
+        if (!SDL_WriteS32BE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write big endian int '{value}' to IO stream: {SDL_GetError()}"
@@ -709,7 +709,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU64LittleEndian(ulong value)
     {
-        if (!SDL_WriteU64LE(_ioStream, value))
+        if (!SDL_WriteU64LE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write little endian ulong '{value}' to IO stream: {SDL_GetError()}"
@@ -724,7 +724,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteU64BigEndian(ulong value)
     {
-        if (!SDL_WriteU64BE(_ioStream, value))
+        if (!SDL_WriteU64BE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write big endian ulong '{value}' to IO stream: {SDL_GetError()}"
@@ -739,7 +739,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS64LittleEndian(long value)
     {
-        if (!SDL_WriteS64LE(_ioStream, value))
+        if (!SDL_WriteS64LE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write little endian long '{value}' to IO stream: {SDL_GetError()}"
@@ -754,7 +754,7 @@ public class IoStream : Stream
     /// <exception cref="ExternalException">Thrown if the write operation fails.</exception>
     public void WriteS64BigEndian(long value)
     {
-        if (!SDL_WriteS64BE(_ioStream, value))
+        if (!SDL_WriteS64BE(_handle, value))
         {
             throw new ExternalException(
                 $"Failed to write big endian long '{value}' to IO stream: {SDL_GetError()}"
