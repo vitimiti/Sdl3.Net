@@ -25,6 +25,49 @@ forcing you to manage errors that shouldn't terminate your application.
 Each SDL system is implemented in a safe, managed way to allow complete, safe use
 of the library without the fuss of using C.
 
+### The Initialization System
+
+To initialize SDL and terminate it, you use the `App` class in the `Sdl3.Net` namespace.
+This class provides the systems to set the SDL application metadata and to initialize
+all subsystems.
+
+For example:
+
+```csharp
+using namespace Sdl3.Net;
+using namespace Sdl3.Net.AppSubsystems;
+using namespace Sdl3.Net.Options;
+
+using App app = new(options =>
+{
+    options.AppName = "My App";
+    options.AppVersion = new Version(1, 2, 3);
+    options.AppIdentifier = "org.app.my";
+});
+
+using var video = app.Video;
+using var events = app.Events;
+```
+
+This library will automatically (in the example above), call `SDL_QuitSubSystem` first for the
+`events`, then for the `video`, and then it will call `SDL_Quit` for the `app`.
+
+As with all SDL methods, initialization errors are transmitted to the user through the
+`ExternalException`.
+
+The app options are optional, and not providing any (`using App app = new()` or
+`using App app = new(null)`) will not set any metadata and leave the SDL defaults intact.
+
+To set/get further metadata, you may use the static class `App.Metadata`. This is not part
+of the options as it calls differente SDL functions and may have its own erros, and therefore
+its own exceptions:
+
+```csharp
+using App app = new();
+App.Metadata.SetName("My App");
+Console.WriteLine($"App name: {App.Metadata.Name}");
+```
+
 ### The Properties System
 
 The SDL3 properties system is managed by the class `Properties` in the `Sdl3.Net.PropertiesSystem`
