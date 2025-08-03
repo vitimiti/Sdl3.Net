@@ -98,6 +98,12 @@ public class Palette : IDisposable
         }
     }
 
+    internal unsafe Palette(SDL_Palette* handle)
+    {
+        Handle = handle;
+        _ownsPalette = false;
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Palette"/> class with a number of colors.
     /// </summary>
@@ -171,9 +177,15 @@ public class Palette : IDisposable
             if (!SDL_SetPaletteColors(Handle, [.. colors], firstColor, numColors))
             {
                 throw new ExternalException(
-                    $"Failed to set palette colors [{string.Join(",", colors)}]: {SDL_GetError()}"
+                    $"Failed to set palette '{this}' colors to [{string.Join(',', colors)}]: {SDL_GetError()}"
                 );
             }
         }
     }
+
+    /// <summary>
+    /// Returns a string representation of the palette.
+    /// </summary>
+    public override string ToString() =>
+        $"{nameof(Palette)}({nameof(NumColors)}: {NumColors}, {nameof(Colors)}: [{string.Join(',', Colors)}], {nameof(Version)}: {Version}, {nameof(RefCount)}: {RefCount})";
 }

@@ -134,13 +134,13 @@ public class PixelFormatDetails
     /// <summary>
     /// Maps a color to a pixel value using the specified palette.
     /// </summary>
-    /// <param name="palette">The palette to use for mapping.</param>
     /// <param name="color">The color to map.</param>
+    /// <param name="palette">The palette to use for mapping if any.</param>
     /// <returns>The mapped pixel value.</returns>
     /// <remarks>
     /// This function only uses the RGB components of the color.
     /// </remarks>
-    public ColoredPixel MapRgb(Palette? palette, Color color)
+    public ColoredPixel MapRgb(Color color, Palette? palette = null)
     {
         unsafe
         {
@@ -159,10 +159,10 @@ public class PixelFormatDetails
     /// <summary>
     /// Maps a color to a pixel value using the specified palette, including alpha.
     /// </summary>
-    /// <param name="palette">The palette to use for mapping.</param>
     /// <param name="color">The color to map.</param>
+    /// <param name="palette">The palette to use for mapping, if any.</param>
     /// <returns>The mapped pixel value.</returns>
-    public ColoredPixel MapRgba(Palette? palette, Color color)
+    public ColoredPixel MapRgba(Color color, Palette? palette = null)
     {
         unsafe
         {

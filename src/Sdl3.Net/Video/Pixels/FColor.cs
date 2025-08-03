@@ -19,23 +19,41 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System.Runtime.InteropServices.Marshalling;
-using Sdl3.Net.CustomMarshallers;
-
 namespace Sdl3.Net.Video.Pixels;
 
 /// <summary>
-/// Represents a color in RGBA format.
+/// Represents a floating-point color with red, green, blue, and alpha components.
 /// </summary>
 /// <param name="Red">The red component of the color.</param>
 /// <param name="Green">The green component of the color.</param>
 /// <param name="Blue">The blue component of the color.</param>
 /// <param name="Alpha">The alpha component of the color.</param>
-[NativeMarshalling(typeof(ColorMarshaller))]
-public record Color(byte Red, byte Green, byte Blue, byte Alpha = 255)
+public record FColor(float Red, float Green, float Blue, float Alpha = 1F)
 {
     /// <summary>
-    /// Converts this color to a floating-point color with normalized components.
+    /// Gets the red component of the color, clamped between 0.0 and 1.0.
     /// </summary>
-    public FColor ToFColor() => new(Red / 255F, Green / 255F, Blue / 255F, Alpha / 255F);
+    public float Red { get; init; } = float.Clamp(Red, 0F, 1F);
+
+    /// <summary>
+    /// Gets the green component of the color, clamped between 0.0 and 1.0.
+    /// </summary>
+    public float Green { get; init; } = float.Clamp(Green, 0F, 1F);
+
+    /// <summary>
+    /// Gets the blue component of the color, clamped between 0.0 and 1.0.
+    /// </summary>
+    public float Blue { get; init; } = float.Clamp(Blue, 0F, 1F);
+
+    /// <summary>
+    /// Gets the alpha component of the color, clamped between 0.0 and 1.0.
+    /// </summary>
+    public float Alpha { get; init; } = float.Clamp(Alpha, 0F, 1F);
+
+    /// <summary>
+    /// Converts this floating-point color to a standard <see cref="Color"/> with byte components
+    /// by scaling the floating-point values to the range [0, 255].
+    /// </summary>
+    public Color ToColor() =>
+        new((byte)(Red * 255), (byte)(Green * 255), (byte)(Blue * 255), (byte)(Alpha * 255));
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0-alpha
+
+Added a floating point color.
+
+Added the surface system for the video subsystem.
+
 ## 0.6.0-alpha
 
 Added the SDL blend mode system.

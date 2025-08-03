@@ -19,23 +19,40 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System.Runtime.InteropServices.Marshalling;
-using Sdl3.Net.CustomMarshallers;
+using Sdl3.Net.Shapes;
+using static Sdl3.Net.Imports.SDL3;
 
-namespace Sdl3.Net.Video.Pixels;
+namespace Sdl3.Net.PropertiesSystem;
 
 /// <summary>
-/// Represents a color in RGBA format.
+/// Represents surface properties in the SDL properties system.
 /// </summary>
-/// <param name="Red">The red component of the color.</param>
-/// <param name="Green">The green component of the color.</param>
-/// <param name="Blue">The blue component of the color.</param>
-/// <param name="Alpha">The alpha component of the color.</param>
-[NativeMarshalling(typeof(ColorMarshaller))]
-public record Color(byte Red, byte Green, byte Blue, byte Alpha = 255)
+public sealed class SurfaceProperties : Properties
 {
     /// <summary>
-    /// Converts this color to a floating-point color with normalized components.
+    /// Gets the SDR white point of the surface.
     /// </summary>
-    public FColor ToFColor() => new(Red / 255F, Green / 255F, Blue / 255F, Alpha / 255F);
+    public float SdrWhitePoint => GetFloatProperty(SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT);
+
+    /// <summary>
+    /// Gets the HDR headroom of the surface.
+    /// </summary>
+    public float HdrHeadroom => GetFloatProperty(SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT);
+
+    /// <summary>
+    /// Gets the tonemap operator of the surface.
+    /// </summary>
+    public string? TonemapOperator => GetStringProperty(SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING);
+
+    /// <summary>
+    /// Gets the hotspot of the surface.
+    /// </summary>
+    public Point Hotspot =>
+        new(
+            (int)GetNumberProperty(SDL_PROP_SURFACE_HOTSPOT_X_NUMBER),
+            (int)GetNumberProperty(SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER)
+        );
+
+    internal SurfaceProperties(SDL_PropertiesID propertiesId)
+        : base(propertiesId) { }
 }

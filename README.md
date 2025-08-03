@@ -26,7 +26,7 @@ to use.
 >
 > This is a temporary measure to develop faster.
 
-Current version: `0.6.0-alpha`
+Current version: `0.7.0-alpha`
 
 > <span style="color: yellow;">**Note**</span>
 >
@@ -48,6 +48,7 @@ Current version: `0.6.0-alpha`
     - [Video Subsystem](#video-subsystem)
       - [Pixels Subsystem](#pixels-subsystem)
       - [Blending Subsystem](#blending-subsystem)
+      - [Surface Subsystem](#surface-subsystem)
     - [Shapes](#shapes)
 
 ## SDL Error Reporting
@@ -236,6 +237,42 @@ created through the static method `Sdl3.Net.Video.Blending.CustomBlendMode.Compo
 
 To create the custom blend modes, you can use the enumerations
 `Sdl3.Net.Video.Blending.BlendFactor` and `Sdl3.Net.Video.Blending.BlendOperation`.
+
+#### Surface Subsystem
+
+The surface is fully managed through an `IDisposable`, OOP class in `Sdl3.Net.Video.Surface`.
+This system also adds `Memory<byte>` extensions to manipulate as pixels.
+
+There is also a properties class in
+`Sdl3.Net.PropertiesSystem.SurfaceProperties` that you can access through `surface.GetProperties()`.
+
+For example:
+
+```csharp
+using Sdl3.Net.Video;
+using Sdl3.Net.Video.Pixels;
+
+Memory<byte> myPixels = GetPixels();
+
+var premultiplied = myPixels.PremultiplyAlpha(
+    size: (340, 480),
+    sourceData: (PixelFormat.Rgb32, Pitch: 8),
+    destinationData: (PixelFormat.Rgba32, Pitch: 16),
+    linear: false
+);
+
+using Surface surface = new(
+    size: (340, 480), format: PixelFormat.Rgba32, premultiplied, pitch: 16
+);
+
+var props = surface.GetProperties();
+Console.WriteLine($"Tonemap Operator: {props.TonemapOperator}");
+```
+
+> <span style="color: yellow;">**Note**</span>
+>
+> Do not use this example above as a working surface setup, this is meant only
+> to showcase the surface subsystem.
 
 ### Shapes
 

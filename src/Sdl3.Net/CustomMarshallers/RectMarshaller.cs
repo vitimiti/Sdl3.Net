@@ -28,6 +28,7 @@ namespace Sdl3.Net.CustomMarshallers;
 
 [CustomMarshaller(typeof(Rect), MarshalMode.Default, typeof(RectMarshaller))]
 [CustomMarshaller(typeof(Rect), MarshalMode.ManagedToUnmanagedIn, typeof(ManagedToUnmanagedIn))]
+[CustomMarshaller(typeof(Rect), MarshalMode.ElementIn, typeof(ElementIn))]
 internal static class RectMarshaller
 {
     public static Rect ConvertToManaged(SDL_Rect rect) => new(rect.x, rect.y, rect.w, rect.h);
@@ -75,5 +76,19 @@ internal static class RectMarshaller
                 _handle.Free();
             }
         }
+    }
+
+    public static class ElementIn
+    {
+        public static Rect ConvertToManaged(SDL_Rect rect) => new(rect.x, rect.y, rect.w, rect.h);
+
+        public static SDL_Rect ConvertToUnmanaged(Rect rect) =>
+            new()
+            {
+                x = rect.X,
+                y = rect.Y,
+                w = rect.Width,
+                h = rect.Height,
+            };
     }
 }

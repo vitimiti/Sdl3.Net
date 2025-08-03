@@ -19,23 +19,25 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-using System.Runtime.InteropServices.Marshalling;
-using Sdl3.Net.CustomMarshallers;
-
-namespace Sdl3.Net.Video.Pixels;
+namespace Sdl3.Net.Video;
 
 /// <summary>
-/// Represents a color in RGBA format.
+/// Represents the flip modes available in SDL.
 /// </summary>
-/// <param name="Red">The red component of the color.</param>
-/// <param name="Green">The green component of the color.</param>
-/// <param name="Blue">The blue component of the color.</param>
-/// <param name="Alpha">The alpha component of the color.</param>
-[NativeMarshalling(typeof(ColorMarshaller))]
-public record Color(byte Red, byte Green, byte Blue, byte Alpha = 255)
+public enum FlipMode
 {
     /// <summary>
-    /// Converts this color to a floating-point color with normalized components.
+    /// No flipping.
     /// </summary>
-    public FColor ToFColor() => new(Red / 255F, Green / 255F, Blue / 255F, Alpha / 255F);
+    None,
+
+    /// <summary>
+    /// Horizontal flipping.
+    /// </summary>
+    Horizontal,
+
+    /// <summary>
+    /// Vertical flipping.
+    /// </summary>
+    Vertical,
 }

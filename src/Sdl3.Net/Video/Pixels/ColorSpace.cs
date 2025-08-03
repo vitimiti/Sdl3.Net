@@ -28,38 +28,37 @@ namespace Sdl3.Net.Video.Pixels;
 /// </summary>
 public class ColorSpace
 {
-    private readonly SDL_Colorspace _colorspace;
+    internal SDL_Colorspace Handle { get; }
 
     /// <summary>
     /// Gets the color type of the color space.
     /// </summary>
-    public ColorType Type => (ColorType)((uint)_colorspace >> 28 & 0x0F);
+    public ColorType Type => (ColorType)((uint)Handle >> 28 & 0x0F);
 
     /// <summary>
     /// Gets the color range of the color space.
     /// </summary>
-    public ColorRange Range => (ColorRange)((uint)_colorspace >> 24 & 0x0F);
+    public ColorRange Range => (ColorRange)((uint)Handle >> 24 & 0x0F);
 
     /// <summary>
     /// Gets the chroma location of the color space.
     /// </summary>
-    public ChromaLocation Chroma => (ChromaLocation)((uint)_colorspace >> 20 & 0x0F);
+    public ChromaLocation Chroma => (ChromaLocation)((uint)Handle >> 20 & 0x0F);
 
     /// <summary>
     /// Gets the color primaries of the color space.
     /// </summary>
-    public ColorPrimaries Primaries => (ColorPrimaries)((uint)_colorspace >> 10 & 0x1F);
+    public ColorPrimaries Primaries => (ColorPrimaries)((uint)Handle >> 10 & 0x1F);
 
     /// <summary>
     /// Gets the transfer characteristics of the color space.
     /// </summary>
-    public TransferCharacteristics Transfer =>
-        (TransferCharacteristics)((uint)_colorspace >> 5 & 0x1F);
+    public TransferCharacteristics Transfer => (TransferCharacteristics)((uint)Handle >> 5 & 0x1F);
 
     /// <summary>
     /// Gets the matrix coefficients of the color space.
     /// </summary>
-    public MatrixCoefficients Matrix => (MatrixCoefficients)((uint)_colorspace & 0x1F);
+    public MatrixCoefficients Matrix => (MatrixCoefficients)((uint)Handle & 0x1F);
 
     /// <summary>
     /// Checks if the color space is BT.601.
@@ -86,12 +85,14 @@ public class ColorSpace
     /// </summary>
     public bool IsFullRange => Range is ColorRange.Full;
 
-    private ColorSpace(uint colorspace) => _colorspace = (SDL_Colorspace)colorspace;
+    private ColorSpace(uint colorspace) => Handle = (SDL_Colorspace)colorspace;
+
+    internal ColorSpace(SDL_Colorspace colorspace) => Handle = colorspace;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ColorSpace"/> class with an unknown color space.
     /// </summary>
-    public static ColorSpace Unknown => new(0);
+    public static ColorSpace Unknown => new(0U);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ColorSpace"/> class with an SRGB color space.

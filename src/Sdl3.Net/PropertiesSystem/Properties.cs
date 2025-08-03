@@ -42,16 +42,16 @@ public class Properties : IDisposable
     /// <param name="name">Name of the property being enumerated.</param>
     public delegate void EnumeratePropertiesCallback(Properties properties, string name);
 
-    private SDL_PropertiesID _propertiesId;
     private readonly bool _ownsProperties;
 
     private bool _isLocked;
     private bool _disposedValue;
 
+    internal SDL_PropertiesID Id { get; }
     internal static GCHandle CleanupCallbackHandle { get; set; }
 
     internal Properties(SDL_PropertiesID propertiesId, bool ownsProperties = false) =>
-        (_propertiesId, _ownsProperties) = (propertiesId, ownsProperties);
+        (Id, _ownsProperties) = (propertiesId, ownsProperties);
 
     /// <summary>
     ///  Unlocks the properties if they are locked, disposes of the cleanup callback handle,
@@ -72,7 +72,7 @@ public class Properties : IDisposable
 
         if (_isLocked)
         {
-            SDL_LockProperties(_propertiesId);
+            SDL_LockProperties(Id);
             _isLocked = false;
         }
 
@@ -83,7 +83,7 @@ public class Properties : IDisposable
 
         if (_ownsProperties)
         {
-            SDL_DestroyProperties(_propertiesId);
+            SDL_DestroyProperties(Id);
         }
 
         _disposedValue = true;
@@ -136,14 +136,14 @@ public class Properties : IDisposable
     /// </summary>
     /// <param name="name">The name of the property to check.</param>
     /// <returns>True if the property exists, otherwise false.</returns>
-    public bool HasProperty(string name) => SDL_HasProperty(_propertiesId, name);
+    public bool HasProperty(string name) => SDL_HasProperty(Id, name);
 
     /// <summary>
     ///  Gets the type of a property by its name.
     /// </summary>
     /// <param name="name">The name of the property to get the type for.</param>
     /// <returns>The PropertyType of the specified property.</returns>
-    public PropertyType GetPropertyType(string name) => SDL_GetPropertyType(_propertiesId, name);
+    public PropertyType GetPropertyType(string name) => SDL_GetPropertyType(Id, name);
 
     /// <summary>
     ///  Gets a pointer property by its name.
@@ -154,11 +154,11 @@ public class Properties : IDisposable
     /// <remarks>This will safely attempt to lock the properties before getting the value.</remarks>
     public nint GetPointerProperty(string name, nint defaultValue = 0)
     {
-        var locked = SDL_LockProperties(_propertiesId);
-        nint value = SDL_GetPointerProperty(_propertiesId, name, defaultValue);
+        var locked = SDL_LockProperties(Id);
+        nint value = SDL_GetPointerProperty(Id, name, defaultValue);
         if (locked)
         {
-            SDL_UnlockProperties(_propertiesId);
+            SDL_UnlockProperties(Id);
         }
 
         return value;
@@ -173,11 +173,11 @@ public class Properties : IDisposable
     /// <remarks>This will safely attempt to lock the properties before getting the value.</remarks>
     public string? GetStringProperty(string name, string? defaultValue = null)
     {
-        var locked = SDL_LockProperties(_propertiesId);
-        string? value = SDL_GetStringProperty(_propertiesId, name, defaultValue);
+        var locked = SDL_LockProperties(Id);
+        string? value = SDL_GetStringProperty(Id, name, defaultValue);
         if (locked)
         {
-            SDL_UnlockProperties(_propertiesId);
+            SDL_UnlockProperties(Id);
         }
 
         return value;
@@ -190,7 +190,7 @@ public class Properties : IDisposable
     /// <param name="defaultValue">The default value to return if the property is not found.</param>
     /// <returns>The number value of the specified property.</returns>
     public long GetNumberProperty(string name, long defaultValue = 0) =>
-        SDL_GetNumberProperty(_propertiesId, name, defaultValue);
+        SDL_GetNumberProperty(Id, name, defaultValue);
 
     /// <summary>
     ///  Gets a float property by its name.
@@ -199,7 +199,7 @@ public class Properties : IDisposable
     /// <param name="defaultValue">The default value to return if the property is not found.</param>
     /// <returns>The float value of the specified property.</returns>
     public float GetFloatProperty(string name, float defaultValue = .0F) =>
-        SDL_GetFloatProperty(_propertiesId, name, defaultValue);
+        SDL_GetFloatProperty(Id, name, defaultValue);
 
     /// <summary>
     ///  Gets a boolean property by its name.
@@ -208,7 +208,7 @@ public class Properties : IDisposable
     /// <param name="defaultValue">The default value to return if the property is not found.</param>
     /// <returns>The boolean value of the specified property.</returns>
     public bool GetBoolProperty(string name, bool defaultValue = false) =>
-        SDL_GetBoolProperty(_propertiesId, name, defaultValue);
+        SDL_GetBoolProperty(Id, name, defaultValue);
 
     /// <summary>
     ///  Sets a pointer property with a cleanup callback.
@@ -220,17 +220,17 @@ public class Properties : IDisposable
     /// <exception cref="ExternalException">Thrown if the property could not be set.</exception>
     public void SetProperty(string name, nint value, CleanupPropertyCallback cleanup)
     {
-        var locked = SDL_LockProperties(_propertiesId);
-        if (!SDL_SetPointerPropertyWithCleanup(_propertiesId, name, value, cleanup))
+        var locked = SDL_LockProperties(Id);
+        if (!SDL_SetPointerPropertyWithCleanup(Id, name, value, cleanup))
         {
             throw new ExternalException(
-                $"Failed to set pointer property '{name}' for properties '0x{_propertiesId:X8}' to '0x{value:X8}': {SDL_GetError()}"
+                $"Failed to set pointer property '{name}' for properties '0x{Id:X8}' to '0x{value:X8}': {SDL_GetError()}"
             );
         }
 
         if (locked)
         {
-            SDL_UnlockProperties(_propertiesId);
+            SDL_UnlockProperties(Id);
         }
     }
 
@@ -243,17 +243,17 @@ public class Properties : IDisposable
     /// <exception cref="ExternalException">Thrown if the property could not be set.</exception>
     public void SetProperty(string name, nint value)
     {
-        var locked = SDL_LockProperties(_propertiesId);
-        if (!SDL_SetPointerProperty(_propertiesId, name, value))
+        var locked = SDL_LockProperties(Id);
+        if (!SDL_SetPointerProperty(Id, name, value))
         {
             throw new ExternalException(
-                $"Failed to set pointer property '{name}' for properties '0x{_propertiesId:X8}' to '0x{value:X8}': {SDL_GetError()}"
+                $"Failed to set pointer property '{name}' for properties '0x{Id:X8}' to '0x{value:X8}': {SDL_GetError()}"
             );
         }
 
         if (locked)
         {
-            SDL_UnlockProperties(_propertiesId);
+            SDL_UnlockProperties(Id);
         }
     }
 
@@ -266,17 +266,17 @@ public class Properties : IDisposable
     /// <exception cref="ExternalException">Thrown if the property could not be set.</exception>
     public void SetProperty(string name, string? value)
     {
-        var locked = SDL_LockProperties(_propertiesId);
-        if (!SDL_SetStringProperty(_propertiesId, name, value))
+        var locked = SDL_LockProperties(Id);
+        if (!SDL_SetStringProperty(Id, name, value))
         {
             throw new ExternalException(
-                $"Failed to set string property '{name}' for properties '0x{_propertiesId:X8}' to '{value}': {SDL_GetError()}"
+                $"Failed to set string property '{name}' for properties '0x{Id:X8}' to '{value}': {SDL_GetError()}"
             );
         }
 
         if (locked)
         {
-            SDL_UnlockProperties(_propertiesId);
+            SDL_UnlockProperties(Id);
         }
     }
 
@@ -288,10 +288,10 @@ public class Properties : IDisposable
     /// <exception cref="ExternalException">Thrown if the property could not be set.</exception>
     public void SetProperty(string name, long value)
     {
-        if (!SDL_SetNumberProperty(_propertiesId, name, value))
+        if (!SDL_SetNumberProperty(Id, name, value))
         {
             throw new ExternalException(
-                $"Failed to set number property '{name}' for properties '0x{_propertiesId:X8}' to '{value}': {SDL_GetError()}"
+                $"Failed to set number property '{name}' for properties '0x{Id:X8}' to '{value}': {SDL_GetError()}"
             );
         }
     }
@@ -304,10 +304,10 @@ public class Properties : IDisposable
     /// <exception cref="ExternalException">Thrown if the property could not be set.</exception>
     public void SetProperty(string name, float value)
     {
-        if (!SDL_SetNumberProperty(_propertiesId, name, (long)value))
+        if (!SDL_SetNumberProperty(Id, name, (long)value))
         {
             throw new ExternalException(
-                $"Failed to set number property '{name}' for properties '0x{_propertiesId:X8}' to '{value:F2}': {SDL_GetError()}"
+                $"Failed to set number property '{name}' for properties '0x{Id:X8}' to '{value:F2}': {SDL_GetError()}"
             );
         }
     }
@@ -320,10 +320,10 @@ public class Properties : IDisposable
     /// <exception cref="ExternalException">Thrown if the property could not be set.</exception>
     public void SetProperty(string name, bool value)
     {
-        if (!SDL_SetBoolProperty(_propertiesId, name, value))
+        if (!SDL_SetBoolProperty(Id, name, value))
         {
             throw new ExternalException(
-                $"Failed to set boolean property '{name}' for properties '0x{_propertiesId:X8}' to '{value}': {SDL_GetError()}"
+                $"Failed to set boolean property '{name}' for properties '0x{Id:X8}' to '{value}': {SDL_GetError()}"
             );
         }
     }
@@ -335,10 +335,10 @@ public class Properties : IDisposable
     /// <exception cref="ExternalException">Thrown if the enumeration fails.</exception>
     public void EnumerateProperties(EnumeratePropertiesCallback callback)
     {
-        if (!SDL_EnumerateProperties(_propertiesId, callback))
+        if (!SDL_EnumerateProperties(Id, callback))
         {
             throw new ExternalException(
-                $"Failed to enumerate properties '0x{_propertiesId:X8}': {SDL_GetError()}"
+                $"Failed to enumerate properties '0x{Id:X8}': {SDL_GetError()}"
             );
         }
     }
@@ -350,10 +350,10 @@ public class Properties : IDisposable
     /// <exception cref="ExternalException">Thrown if the property could not be cleared.</exception>
     public void ClearProperty(string name)
     {
-        if (!SDL_ClearProperty(_propertiesId, name))
+        if (!SDL_ClearProperty(Id, name))
         {
             throw new ExternalException(
-                $"Failed to clear property '{name}' for properties '0x{_propertiesId:X8}': {SDL_GetError()}"
+                $"Failed to clear property '{name}' for properties '0x{Id:X8}': {SDL_GetError()}"
             );
         }
     }
@@ -364,7 +364,7 @@ public class Properties : IDisposable
     /// <exception cref="ExternalException">Thrown if the properties could not be locked.</exception>
     public void Lock()
     {
-        if (!SDL_LockProperties(_propertiesId))
+        if (!SDL_LockProperties(Id))
         {
             throw new ExternalException($"Failed to lock properties: {SDL_GetError()}");
         }
@@ -375,7 +375,7 @@ public class Properties : IDisposable
     /// <summary>
     ///  Unlocks the properties after exclusive access.
     /// </summary>
-    public void Unlock() => SDL_UnlockProperties(_propertiesId);
+    public void Unlock() => SDL_UnlockProperties(Id);
 
     /// <summary>
     ///  Copies the properties to another Properties instance.
@@ -384,10 +384,10 @@ public class Properties : IDisposable
     /// <exception cref="ExternalException">Thrown if the properties could not be copied.</exception>
     public void CopyTo(Properties destination)
     {
-        if (!SDL_CopyProperties(_propertiesId, destination._propertiesId))
+        if (!SDL_CopyProperties(Id, destination.Id))
         {
             throw new ExternalException(
-                $"Failed to copy properties '0x{_propertiesId:X8}' to properties '0x{destination._propertiesId:X8}': {SDL_GetError()}"
+                $"Failed to copy properties '0x{Id:X8}' to properties '0x{destination.Id:X8}': {SDL_GetError()}"
             );
         }
     }

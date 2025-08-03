@@ -29,45 +29,45 @@ namespace Sdl3.Net.Video.Pixels;
 /// </summary>
 public class PixelFormat
 {
-    private readonly SDL_PixelFormat _format;
+    internal SDL_PixelFormat Handle { get; }
 
     /// <summary>
     /// Gets the flags of the pixel format.
     /// </summary>
-    public uint Flags => (uint)_format >> 28 & 0x0F;
+    public uint Flags => (uint)Handle >> 28 & 0x0F;
 
     /// <summary>
     /// Gets the type of the pixel format.
     /// </summary>
-    public PixelType Type => (PixelType)((uint)_format >> 24 & 0x0F);
+    public PixelType Type => (PixelType)((uint)Handle >> 24 & 0x0F);
 
     /// <summary>
     /// Gets the array order of the pixel format.
     /// </summary>
     public ArrayOrder ArrayOrder =>
-        IsArray ? (ArrayOrder)((uint)_format >> 20 & 0x0F) : ArrayOrder.None;
+        IsArray ? (ArrayOrder)((uint)Handle >> 20 & 0x0F) : ArrayOrder.None;
 
     /// <summary>
     /// Gets the bitmap order of the pixel format.
     /// </summary>
     public BitmapOrder BitmapOrder =>
-        !IsArray && !IsPacked ? (BitmapOrder)((uint)_format >> 20 & 0x0F) : BitmapOrder.None;
+        !IsArray && !IsPacked ? (BitmapOrder)((uint)Handle >> 20 & 0x0F) : BitmapOrder.None;
 
     /// <summary>
     /// Gets the packed order of the pixel format.
     /// </summary>
     public PackedOrder PackedOrder =>
-        IsPacked ? (PackedOrder)((uint)_format >> 20 & 0x0F) : PackedOrder.None;
+        IsPacked ? (PackedOrder)((uint)Handle >> 20 & 0x0F) : PackedOrder.None;
 
     /// <summary>
     /// Gets the packed layout of the pixel format.
     /// </summary>
-    public PackedLayout Layout => (PackedLayout)((uint)_format >> 16 & 0x0F);
+    public PackedLayout Layout => (PackedLayout)((uint)Handle >> 16 & 0x0F);
 
     /// <summary>
     /// Gets the bits per pixel of the pixel format.
     /// </summary>
-    public uint BitsPerPixel => IsFourCc ? 0 : (uint)_format >> 8 & 0xFF;
+    public uint BitsPerPixel => IsFourCc ? 0 : (uint)Handle >> 8 & 0xFF;
 
     /// <summary>
     /// Gets the bytes per pixel of the pixel format.
@@ -75,14 +75,14 @@ public class PixelFormat
     public uint BytesPerPixel =>
         IsFourCc
             ? (
-                _format == SDL_PIXELFORMAT_YUY2
-                || _format == SDL_PIXELFORMAT_UYVY
-                || _format == SDL_PIXELFORMAT_YVYU
-                || _format == SDL_PIXELFORMAT_P010
+                Handle == SDL_PIXELFORMAT_YUY2
+                || Handle == SDL_PIXELFORMAT_UYVY
+                || Handle == SDL_PIXELFORMAT_YVYU
+                || Handle == SDL_PIXELFORMAT_P010
                     ? 2U
                     : 1U
             )
-            : (uint)_format & 0xFF;
+            : (uint)Handle & 0xFF;
 
     /// <summary>
     /// Gets whether the pixel format is indexed.
@@ -144,7 +144,7 @@ public class PixelFormat
     /// <summary>
     /// Gets whether the pixel format is a FourCC format.
     /// </summary>
-    public bool IsFourCc => _format != 0 && Flags != 1;
+    public bool IsFourCc => Handle != 0 && Flags != 1;
 
     private PixelFormat(
         PixelType type,
@@ -153,11 +153,11 @@ public class PixelFormat
         uint bits,
         uint bitsPerPixel
     ) =>
-        _format = (SDL_PixelFormat)(
+        Handle = (SDL_PixelFormat)(
             1 << 28 | (uint)type << 24 | order << 20 | (uint)layout << 16 | bits << 8 | bitsPerPixel
         );
 
-    internal PixelFormat(SDL_PixelFormat format) => _format = format;
+    internal PixelFormat(SDL_PixelFormat format) => Handle = format;
 
     /// <summary>
     /// Creates a new instance of the <see cref="PixelFormat"/> class.
@@ -228,7 +228,7 @@ public class PixelFormat
     /// <param name="c">The blue component of the pixel format.</param>
     /// <param name="d">The alpha component of the pixel format.</param>
     public PixelFormat(byte a, byte b, byte c, byte d) =>
-        _format = (SDL_PixelFormat)((uint)a << 0 | (uint)b << 8 | (uint)c << 16 | (uint)d << 24);
+        Handle = (SDL_PixelFormat)((uint)a << 0 | (uint)b << 8 | (uint)c << 16 | (uint)d << 24);
 
     /// <summary>
     /// Gets a <see cref="PixelFormat"/> instance representing an unknown pixel format.
@@ -609,14 +609,16 @@ public class PixelFormat
     public PixelFormatMasks GetMasks(out int bitsPerPixel)
     {
         return !SDL_GetMasksForPixelFormat(
-            _format,
+            Handle,
             out bitsPerPixel,
             out var rMask,
             out var gMask,
             out var bMask,
             out var aMask
         )
-            ? throw new ExternalException($"Failed to get masks for pixel format: {SDL_GetError()}")
+            ? throw new ExternalException(
+                $"Failed to get masks for pixel format '{this}': {SDL_GetError()}"
+            )
             : new PixelFormatMasks(rMask, gMask, bMask, aMask);
     }
 
@@ -627,10 +629,10 @@ public class PixelFormat
     {
         unsafe
         {
-            var details = SDL_GetPixelFormatDetails(_format);
+            var details = SDL_GetPixelFormatDetails(Handle);
             return details is null
                 ? throw new ExternalException(
-                    $"Failed to get details for pixel format: {SDL_GetError()}"
+                    $"Failed to get details for pixel format '{this}': {SDL_GetError()}"
                 )
                 : new PixelFormatDetails(details);
         }
@@ -639,5 +641,5 @@ public class PixelFormat
     /// <summary>
     /// Gets the name of the pixel format.
     /// </summary>
-    public override string ToString() => SDL_GetPixelFormatName(_format);
+    public override string ToString() => SDL_GetPixelFormatName(Handle);
 }
