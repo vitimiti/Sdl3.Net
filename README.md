@@ -1,5 +1,18 @@
 # Sdl3.Net
 
+[![License: MIT](https://img.shields.io/github/license/vitimiti/Sdl3.Net)](https://opensource.org/licenses/MIT)
+[![.NET](https://github.com/vitimiti/Sdl3.Net/actions/workflows/dotnet.yml/badge.svg)](https://github.com/vitimiti/Sdl3.Net/actions/workflows/dotnet.yml)
+![Release](https://img.shields.io/github/v/release/vitimiti/Sdl3.Net)
+
+![Stars](https://img.shields.io/github/stars/vitimiti/Sdl3.Net)
+![Forks](https://img.shields.io/github/forks/vitimiti/Sdl3.Net)
+
+![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=csharp&logoColor=white)
+![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
+![Visual Studio Code](https://img.shields.io/badge/Visual%20Studio%20Code-0078d7.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white)
+
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat&logo=linux&logoColor=black)
+
 This is a fully managed, safe implementation and import of the SDL3 native
 library. The library is not being reimplemented, but the API is safer and easier
 to use.
