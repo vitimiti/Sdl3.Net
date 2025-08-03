@@ -19,9 +19,20 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-namespace Sdl3.Net.Extensions;
+using System.Runtime.InteropServices.Marshalling;
+using Sdl3.Net.Shapes;
+using static Sdl3.Net.Imports.SDL3;
 
-internal static class StringExtensions
+namespace Sdl3.Net.CustomMarshallers;
+
+[CustomMarshaller(typeof(Point), MarshalMode.ElementIn, typeof(ElementIn))]
+internal static class PointMarshaller
 {
-    public static string ToStdIoString(this string str) => str.Replace("%", "%%");
+    public static class ElementIn
+    {
+        public static SDL_Point ConvertToUnmanaged(Point managed) =>
+            new() { x = managed.X, y = managed.Y };
+
+        public static Point ConvertToManaged(SDL_Point unmanaged) => new(unmanaged.x, unmanaged.y);
+    }
 }

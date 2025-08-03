@@ -19,9 +19,39 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-namespace Sdl3.Net.Extensions;
+using System.Runtime.InteropServices.Marshalling;
+using Sdl3.Net.CustomMarshallers;
 
-internal static class StringExtensions
+namespace Sdl3.Net.Shapes;
+
+/// <summary>
+/// Represents a point in 2D space.
+/// </summary>
+/// <param name="X">The X coordinate of the point.</param>
+/// <param name="Y">The Y coordinate of the point.</param>
+[NativeMarshalling(typeof(PointMarshaller))]
+public record Point(int X, int Y)
 {
-    public static string ToStdIoString(this string str) => str.Replace("%", "%%");
+    /// <summary>
+    /// Gets a point at the origin (0, 0).
+    /// </summary>
+    public static Point Zero => new(0, 0);
+
+    /// <summary>
+    /// Gets a point on the X axis unit at (1, 0).
+    /// </summary>
+    public static Point UnitX => new(1, 0);
+
+    /// <summary>
+    /// Gets a point on the Y axis unit at (0, 1).
+    /// </summary>
+    public static Point UnitY => new(0, 1);
+
+    /// <summary>
+    /// Checks if this point is inside the specified rectangle.
+    /// </summary>
+    /// <param name="rect">The rectangle to check against.</param>
+    /// <returns>True if the point is inside the rectangle, otherwise false.</returns>
+    public bool IsInside(Rect rect) =>
+        X >= rect.X && X < rect.X + rect.Width && Y >= rect.Y && Y < rect.Y + rect.Height;
 }

@@ -19,43 +19,61 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
+using Sdl3.Net.Shapes;
 using static Sdl3.Net.Imports.SDL3;
 
 namespace Sdl3.Net.CustomMarshallers;
 
-[CustomMarshaller(typeof(string), MarshalMode.ManagedToUnmanagedOut, typeof(ManagedToUnmanagedOut))]
-internal static class SdlOwnedUtf8StringMarshaller
+[CustomMarshaller(typeof(Rect), MarshalMode.Default, typeof(RectMarshaller))]
+[CustomMarshaller(typeof(Rect), MarshalMode.ManagedToUnmanagedIn, typeof(ManagedToUnmanagedIn))]
+internal static class RectMarshaller
 {
-    public unsafe ref struct ManagedToUnmanagedOut
-    {
-        private byte* _unmanaged;
-        private string? _managed;
+    public static Rect ConvertToManaged(SDL_Rect rect) => new(rect.x, rect.y, rect.w, rect.h);
 
-        public void FromUnmanaged(byte* unmanaged)
+    public static SDL_Rect ConvertToUnmanaged(Rect rect) =>
+        new()
         {
-            if (unmanaged is null)
+            x = rect.X,
+            y = rect.Y,
+            w = rect.Width,
+            h = rect.Height,
+        };
+
+    public unsafe ref struct ManagedToUnmanagedIn
+    {
+        private SDL_Rect* _unmanaged;
+        private GCHandle _handle;
+
+        public void FromManaged(Rect? managed)
+        {
+            if (managed is null)
             {
-                _managed = null;
                 _unmanaged = null;
                 return;
             }
 
-            _unmanaged = SDL_strdup(unmanaged);
-            _managed = Utf8StringMarshaller.ConvertToManaged(_unmanaged);
+            SDL_Rect rect = new()
+            {
+                x = managed.X,
+                y = managed.Y,
+                w = managed.Width,
+                h = managed.Height,
+            };
+
+            _handle = GCHandle.Alloc(rect, GCHandleType.Pinned);
+            _unmanaged = (SDL_Rect*)_handle.AddrOfPinnedObject();
         }
 
-        public readonly string? ToManaged() => _managed;
+        public readonly SDL_Rect* ToUnmanaged() => _unmanaged;
 
         public void Free()
         {
-            if (_unmanaged is null)
+            if (_unmanaged is not null)
             {
-                return;
+                _handle.Free();
             }
-
-            SDL_free(_unmanaged);
-            _unmanaged = null;
         }
     }
 }

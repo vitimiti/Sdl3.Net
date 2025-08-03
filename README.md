@@ -26,7 +26,7 @@ to use.
 >
 > This is a temporary measure to develop faster.
 
-Current version: `0.3.0-alpha`
+Current version: `0.4.0-alpha`
 
 > <span style="color: yellow;">**Note**</span>
 >

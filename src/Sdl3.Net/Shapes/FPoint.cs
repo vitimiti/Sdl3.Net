@@ -20,42 +20,38 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System.Runtime.InteropServices.Marshalling;
-using static Sdl3.Net.Imports.SDL3;
+using Sdl3.Net.CustomMarshallers;
 
-namespace Sdl3.Net.CustomMarshallers;
+namespace Sdl3.Net.Shapes;
 
-[CustomMarshaller(typeof(string), MarshalMode.ManagedToUnmanagedOut, typeof(ManagedToUnmanagedOut))]
-internal static class SdlOwnedUtf8StringMarshaller
+/// <summary>
+/// Represents a floating-pointpoint in 2D space.
+/// </summary>
+/// <param name="X">The X coordinate of the point.</param>
+/// <param name="Y">The Y coordinate of the point.</param>
+[NativeMarshalling(typeof(FPointMarshaller))]
+public record FPoint(float X, float Y)
 {
-    public unsafe ref struct ManagedToUnmanagedOut
-    {
-        private byte* _unmanaged;
-        private string? _managed;
+    /// <summary>
+    /// Gets a point at the origin (0, 0).
+    /// </summary>
+    public static FPoint Zero => new(0, 0);
 
-        public void FromUnmanaged(byte* unmanaged)
-        {
-            if (unmanaged is null)
-            {
-                _managed = null;
-                _unmanaged = null;
-                return;
-            }
+    /// <summary>
+    /// Gets a point on the X axis unit at (1, 0).
+    /// </summary>
+    public static FPoint UnitX => new(1, 0);
 
-            _unmanaged = SDL_strdup(unmanaged);
-            _managed = Utf8StringMarshaller.ConvertToManaged(_unmanaged);
-        }
+    /// <summary>
+    /// Gets a point on the Y axis unit at (0, 1).
+    /// </summary>
+    public static FPoint UnitY => new(0, 1);
 
-        public readonly string? ToManaged() => _managed;
-
-        public void Free()
-        {
-            if (_unmanaged is null)
-            {
-                return;
-            }
-
-            SDL_free(_unmanaged);
-            _unmanaged = null;
-        }
-    }
+    /// <summary>
+    /// Checks if this point is inside the specified rectangle.
+    /// </summary>
+    /// <param name="rect">The rectangle to check against.</param>
+    /// <returns>True if the point is inside the rectangle, otherwise false.</returns>
+    public bool IsInside(FRect rect) =>
+        X >= rect.X && X < rect.X + rect.Width && Y >= rect.Y && Y < rect.Y + rect.Height;
 }
