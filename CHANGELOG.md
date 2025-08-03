@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0-alpha
+
+Added the SDL blend mode system.
+
 ## 0.5.0-alpha
 
 Added the SDL video pixels system.

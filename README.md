@@ -26,7 +26,7 @@ to use.
 >
 > This is a temporary measure to develop faster.
 
-Current version: `0.5.0-alpha`
+Current version: `0.6.0-alpha`
 
 > <span style="color: yellow;">**Note**</span>
 >
@@ -47,6 +47,7 @@ Current version: `0.5.0-alpha`
     - [The Timer Subsystem](#the-timer-subsystem)
     - [Video Subsystem](#video-subsystem)
       - [Pixels Subsystem](#pixels-subsystem)
+      - [Blending Subsystem](#blending-subsystem)
     - [Shapes](#shapes)
 
 ## SDL Error Reporting
@@ -226,6 +227,15 @@ The color masks, bits and shift have their own records now, `ColorMasks`,
 The `PixelFormat.MapRgb()` and `PixelFormat.MapRgba()` methods now return a
 `ColoredPixel` which, in turn, contains the methods `GetRgb()` and `GetRgba()`
 to receive a `Sdl3.Net.Video.Pixels.Color` back.
+
+#### Blending Subsystem
+
+It is possible to manage blend modes through the
+`Sdl3.Net.Video.Blending.BlendMode` enum, and new custom blend modes can be
+created through the static method `Sdl3.Net.Video.Blending.CustomBlendMode.Compose()`.
+
+To create the custom blend modes, you can use the enumerations
+`Sdl3.Net.Video.Blending.BlendFactor` and `Sdl3.Net.Video.Blending.BlendOperation`.
 
 ### Shapes
 
