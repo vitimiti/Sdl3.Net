@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
-    <Version>0.4.0-alpha</Version>
+    <Version>0.5.0-alpha</Version>
     <Authors>Sdl3.Net Contributors</Authors>
     <Company>Sdl3.Net</Company>
     <Description>Bindings for SDL3 in .NET, but in a fully managed and safe way.</Description>

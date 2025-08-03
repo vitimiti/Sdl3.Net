@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0-alpha
+
+Added the SDL video pixels system.
+
+## 0.4.0-alpha
+
+Added the SDL shapes system.
+
 ## 0.3.0-alpha
 
 Added the application and subsystem initialization system.

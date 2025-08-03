@@ -26,7 +26,7 @@ to use.
 >
 > This is a temporary measure to develop faster.
 
-Current version: `0.4.0-alpha`
+Current version: `0.5.0-alpha`
 
 > <span style="color: yellow;">**Note**</span>
 >
@@ -45,6 +45,8 @@ Current version: `0.4.0-alpha`
     - [The Properties System](#the-properties-system)
     - [The IO Stream System](#the-io-stream-system)
     - [The Timer Subsystem](#the-timer-subsystem)
+    - [Video Subsystem](#video-subsystem)
+      - [Pixels Subsystem](#pixels-subsystem)
     - [Shapes](#shapes)
 
 ## SDL Error Reporting
@@ -191,6 +193,39 @@ using Sdl.Net;
 var performanceCounter = Performance.Counter;
 var performanceFrequency = Performance.Frequency;
 ```
+
+### Video Subsystem
+
+#### Pixels Subsystem
+
+It mostly is just an OOP implementation of the existing C structures and enumerations.
+
+For example, to get a pixel format name, you can do `Sdl3.Net.Video.Pixels.PixelFormat.Rgb32.ToString()`.
+
+To manage palettes, you should use the dispose pattern:
+
+```chsarp
+using namespace Sdl3.Net.Video.Pixels;
+
+using Palette palette = new(numColors: 30);
+```
+
+To get information, simply get your class that represents the structured
+information and get the data in an OOP way:
+
+```csharp
+using namespace Sdl3.Net.Video.Pixels;
+
+var pixelDetails = PixelFormat.Rgb32.GetDetails();
+var bitsPerPixel = pixelDetails.BitsPerPixel;
+```
+
+The color masks, bits and shift have their own records now, `ColorMasks`,
+`ColorBits` and `ColorShift` respectively.
+
+The `PixelFormat.MapRgb()` and `PixelFormat.MapRgba()` methods now return a
+`ColoredPixel` which, in turn, contains the methods `GetRgb()` and `GetRgba()`
+to receive a `Sdl3.Net.Video.Pixels.Color` back.
 
 ### Shapes
 
